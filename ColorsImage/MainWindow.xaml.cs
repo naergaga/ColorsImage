@@ -1,4 +1,8 @@
-﻿using System;
+using ColorsImage.Data;
+using ColorsImage.Util;
+using ColorsImage.Util.Logger;
+using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +27,35 @@ namespace ColorsImage
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var reader = new ImageReader();
+            reader.Logger = new Logger1(Log);
+            var path = TbPath.Text;
+            var mode =int.Parse( this.TbFrame.Text);
+            Task task = new Task(() => {
+                Log("开始");
+                reader.ReadAndWrite(path, mode, System.IO.Path.GetFileNameWithoutExtension(path));
+                Log("结束");
+            });
+            task.Start();
+        }
+
+        public void Log(string message)
+        {
+            Dispatcher.Invoke(()=>this.TbInfo.Text += message + '\n');
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "视频文件(*.mp4,*.avi)|*.mp4;*.avi|所有文件(*.*)|*.*";
+            if (dialog.ShowDialog() == true)
+            {
+                TbPath.Text= dialog.FileName;
+            }
         }
     }
 }
