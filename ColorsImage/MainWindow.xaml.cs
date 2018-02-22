@@ -36,6 +36,7 @@ namespace ColorsImage
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            ClearLog();
             var reader = new ImageReader();
             reader.Logger = new Logger1(Log);
             var path = TbPath.Text;
@@ -58,12 +59,17 @@ namespace ColorsImage
             do
             {
                 Task.Delay(100).GetAwaiter().GetResult();
-            } while (!_readingTask?.IsCanceled == true);
+            } while (!_readingTask?.IsCompleted == true);
         }
 
         public void Log(string message)
         {
             Dispatcher.Invoke(() => this.TbInfo.Text += message + '\n');
+        }
+
+        private void ClearLog()
+        {
+            this.TbInfo.Text = "";
         }
 
         private void Button_Click_1(object sender, RoutedEventArgs e)
@@ -84,7 +90,8 @@ namespace ColorsImage
 
         private void CloseReading()
         {
-            _cts?.Cancel();
+            if (_readingTask?.IsCompleted == false)
+                _cts?.Cancel();
         }
 
         private void Button_Click_2(object sender, RoutedEventArgs e)
