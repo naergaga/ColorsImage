@@ -13,10 +13,7 @@ namespace ColorsImage.ConsoleApp
         static void Main(string[] args)
         {
             ImageReader reader = new ImageReader();
-            reader.Logger = new Logger1(msg => Console.WriteLine(msg));
-            int mode = 0;
-            var path = "./video/Colors.mp4";
-            reader.ReadAndWrite(path, mode, "A");
+            //reader.GetFrame("", 0, "");
         }
     }
 }
