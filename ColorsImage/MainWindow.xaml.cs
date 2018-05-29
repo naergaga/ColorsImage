@@ -1,10 +1,16 @@
 using ColorsImage.Data;
 using ColorsImage.Util;
 using ColorsImage.Util.Logger;
+using ColorsImage.ViewModels;
+using MahApps.Metro.Controls;
+using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -26,6 +32,7 @@ namespace ColorsImage
     /// </summary>
     public partial class MainWindow
     {
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -33,8 +40,9 @@ namespace ColorsImage
 
         private CancellationTokenSource _cts;
         private Task _readingTask;
+        public MainViewModel Model { get; set; } = MainViewModel.GetDefault();
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void BtnStart_Click(object sender, RoutedEventArgs e)
         {
             ClearLog();
             var reader = new ImageReader();
@@ -48,7 +56,8 @@ namespace ColorsImage
             var task = new Task(() =>
             {
                 Log("开始");
-                _readingTask = reader.GetFrameAsync(path, startTime, fps, folderName, cancellationToken);
+                var dir = $"{this.Model.BasePath}/{folderName}";
+                _readingTask = reader.GetFrameAsync(path, startTime, fps, dir, cancellationToken);
             });
             task.Start();
         }
@@ -94,9 +103,60 @@ namespace ColorsImage
                 _cts?.Cancel();
         }
 
-        private void Button_Click_2(object sender, RoutedEventArgs e)
+        private void BtnStop_Click(object sender, RoutedEventArgs e)
         {
             CloseReading();
+        }
+
+
+        private void BtnFolder_Click(object sender, RoutedEventArgs e)
+        {
+            var basePath = System.IO.Path.GetFullPath(Model.BasePath);
+
+            var text = basePath+"/" + TbFolderName.Text;
+            if (!Directory.Exists(text))
+            {
+                text = basePath;
+            }
+            Process.Start(new ProcessStartInfo(text));
+        }
+
+        private void BtnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var flyout1 = this.Flyouts.Items[0] as Flyout;
+            if (flyout1 == null)
+            {
+                return;
+            }
+            flyout1.IsOpen = !flyout1.IsOpen;
+        }
+
+        private async void BtnSaveSettings_Click(object sender, RoutedEventArgs e)
+        {
+            var dir = this.TbBaseImagePath.Text;
+            try { 
+            if (Directory.CreateDirectory(dir).Exists)
+            {
+                Model.BasePath = dir;
+                Model.WriteConfig();
+            }
+            }
+            catch
+            {
+                await this.ShowMessageAsync("提示","输入路径不合法");
+            }
+        }
+
+        private void BtnFolderOpen_Click(object sender, RoutedEventArgs e)
+        {
+            var d1 = new CommonOpenFileDialog();
+            d1.DefaultFileName = Model.BasePath;
+            d1.IsFolderPicker = true;
+            CommonFileDialogResult result = d1.ShowDialog();
+            if(result== CommonFileDialogResult.Ok)
+            {
+                this.TbBaseImagePath.Text = d1.FileName;
+            }
         }
     }
 }

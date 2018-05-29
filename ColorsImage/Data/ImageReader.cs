@@ -37,10 +37,8 @@ namespace ColorsImage.Data
             }
         }
 
-        public Task<ExecutionOutput> GetFrameAsync(string path, TimeSpan start, string fps, string name, CancellationToken token=default(CancellationToken))
+        public Task<ExecutionOutput> GetFrameAsync(string path, TimeSpan start, string fps, string dir, CancellationToken token=default(CancellationToken))
         {
-            var videoName = name ?? Path.GetFileNameWithoutExtension(path);
-            var dir = $"./images/{videoName}";
             Directory.CreateDirectory(dir);
             var argumentStr = $"ffmpeg.exe -i \"{path}\" -ss {start} -r {fps} -q:v 2 -f image2 \"{dir}/pic_%5d.jpg\"";
             using (var cli = new Cli("cmd"))
